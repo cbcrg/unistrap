@@ -1,0 +1,1 @@
+# shootstrap git init
