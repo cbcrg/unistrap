@@ -1,0 +1,3 @@
+
+clustalo -i ${seq_file} -o tmp_out.aln
+t_coffee -other_pg seq_reformat -in tmp_out.aln -output phylip -out ${seq_file}.aln
