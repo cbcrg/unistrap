@@ -2,7 +2,7 @@
 
 //nextflow run shootstrap.nf --in_tree hip_clustalo_100.phy.replicate.tree
 
-params.in_dir="$baseDir/data/dataset*"
+params.in_dir="$baseDir/data/dataset/*"
 params.out_dir="Shootstrap_Analysis_Results"
 params.rep_num=2
 params.seed=10
