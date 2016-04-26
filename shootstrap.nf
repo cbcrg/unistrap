@@ -2,7 +2,7 @@
 
 //nextflow run shootstrap.nf --in_tree hip_clustalo_100.phy.replicate.tree
 
-params.in_dir="data/dataset*"
+params.in_dir="$baseDir/data/dataset/*"
 params.out_dir="Shootstrap_Analysis_Results"
 params.rep_num=2
 params.seed=10
@@ -24,7 +24,7 @@ process get_shuffle_replicates{
   shell:
   '''
       tmp_name=`basename !{seq_file} | awk -F. '{print $1}'`
-      perl ~/Shootstrap/seq_shuffle.pl !{seq_file} ${tmp_name} !{params.seed} !{params.rep_num}
+      seq_shuffle.pl !{seq_file} ${tmp_name} !{params.seed} !{params.rep_num}
   '''
 
 }
@@ -69,7 +69,7 @@ process get_stable_msa_trees{
   shell:
   '''
       tmp_name=`basename !{in_tree_file} | awk -F. '{print $1}'`
-      perl -I ~/bin/ ~/bin/CompareToBootstrap.pl -tree !{in_tree_file} -boot !{all_tree_file} > $tmp_name.stable.tree
+      perl -I !{baseDir}/bin/ !{baseDir}/bin/CompareToBootstrap.pl -tree !{in_tree_file} -boot !{all_tree_file} > $tmp_name.stable.tree
       cat  $tmp_name.stable.tree | sed 's/)/\\n/g' | sed 's/;//g' | awk -F: '{print $1}' | grep -v "(" | grep -v "^$" | awk '{ sum=sum+$1 ; sumX1+=(($2)^2)} END { avg=sum/NR; printf "%f\\n", avg}' 
   '''
 }
@@ -117,6 +117,6 @@ process get_shootstrap_tree{
   shell:
   '''
       tmp_name=`basename !{tree} | awk -F. '{print $1}'`
-      perl -I ~/bin/ ~/bin/CompareToBootstrap.pl -tree !{tree} -boot !{all_tree_file} > $tmp_name.shootstrap.tree
+      perl -I !{baseDir}/bin/ !{baseDir}/bin/CompareToBootstrap.pl -tree !{tree} -boot !{all_tree_file} > $tmp_name.shootstrap.tree
   '''
 } 
