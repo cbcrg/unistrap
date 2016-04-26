@@ -33,7 +33,13 @@ params.seed=10
 params.aligner="clustalo"
 params.in_tree="" 
 
-file_names=Channel.fromPath(params.in_dir)
+
+Channel
+	.fromPath(params.in_dir)
+	.ifEmpty { error "Cannot find any data -- Check the path specified: `${params.in_dir}`" }
+    .set { file_names }
+    
+    
 in_tree_file = params.in_tree ? file(params.in_tree) : null
 if( in_tree_file ) assert in_tree_file.exists(), "The tree file does not exist: $in_tree_file !!!" 
 
