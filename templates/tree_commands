@@ -1,2 +1,2 @@
-
+#!/bin/bash
 FastTree $seq_file > ${output_tree}
