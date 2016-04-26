@@ -23,7 +23,9 @@ Command line options:
 
 	--out_dir	Directory to output the results
 
-	--in_tree	The tree for which the shootstrap support values will be estimated (default: Shootstrap-NF estimates the tree with the most supported tree topology, across the different trees relsulting from the different MSA replicates)
+	--in_tree	The tree for which the shootstrap support values will be estimated 
+				(default: Shootstrap-NF estimates the tree with the most supported tree topology, across the 
+				different trees relsulting from the different MSA replicates)
 
 	--rep_num	The number of MSA replicates to be produced (default: 100)
 
