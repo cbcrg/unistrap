@@ -1,9 +1,9 @@
 Shootstrap-NF
 ===================
 
-Given a protein sequence dataset, Shootstrap-NF estimates a reference phylogenetic tree and the shootstrap support of every branch in that tree. The shootsrap support is a generalized version of Felsenstein branch bootstrap support measure that simultaneously takes into account the sequence input-order effect (shuffling) and the column sampling effect (Felsenstein regular Bootstrap) to provide a support value for every branch in a reference tree. 
+Given a protein sequence dataset, Shootstrap-NF estimates a reference phylogenetic tree and the shootstrap support of every branch in that tree. The shootsrap support is a generalized version of Felsenstein branch bootstrap support measure that simultaneously takes into account the alignment uncerainty effect and the column sampling effect (Felsenstein regular Bootstrap) to provide a support value for every branch in a reference tree. 
 
-In practice, the procedure involves generating N shuffled input sequence datasets, from which as many replicate MSAs are generated and used to generate as many trees. These trees are compared using RF and the one with the highest average similarity is selected as a refence. The replicate shuffled MSAs are then used to draw bootstrap replicates. These replicates are used to estimate shootstrap  support values for every branch of the reference tree. 
+In practice, the procedure involves generating N shuffled input sequence datasets, from which as many replicate MSAs are generated and used to generate as many trees. These trees are compared using Robinson and Foulds (RF) and the one with the highest average similarity (most suported tree topology) is selected as a refence. The replicate shuffled MSAs are then used to draw bootstrap replicates. These replicates are used to estimate shootstrap support values for every branch of the reference tree. 
 
 Installation
 -----------
@@ -37,7 +37,16 @@ Command line options:
 	--seed		Random number to be used to reproduce the shuffling procedure in the exact way (default: 10)
 
 
-    
+Dependencies:
+-------------
+
+Shootstrap-NF uses the following programs (which have to exist in the "path" if the pipeline is executed without docker):
+
+	clustalo	http://www.clustal.org/omega/clustal-omega-1.2.1.tar.gz
+	t-coffee	http://www.tcoffee.org/Packages/Stable/Version_11.00.8cbe486/linux/T-COFFEE_installer_Version_11.00.8cb			e486_linux_x64.tar.gz
+	seqboot		http://evolution.gs.washington.edu/phylip/download/phylip-3.696.tar.gz
+	FastTree	http://meta.microbesonline.org/fasttree/FastTree.c
+	FastTree perl scripts
     
 Bonus
 ------
