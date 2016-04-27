@@ -5,6 +5,11 @@ Given a protein sequence dataset, Shootstrap-NF estimates a reference phylogenet
 
 In practice, the procedure involves generating N shuffled input sequence datasets, from which as many replicate MSAs are generated and used to generate as many trees. These trees are compared using RF and the one with the highest average similarity is selected as a refence. The replicate shuffled MSAs are then used to draw bootstrap replicates. These replicates are used to estimate shootstrap  support values for every branch of the reference tree. 
 
+INSTALLATION
+-----------
+
+
+
 USAGE
 -----------
     
