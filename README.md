@@ -34,7 +34,7 @@ Command line options:
 
 	--rep_num	The number of MSA replicates to be produced (default: 100)
 
-	--seed		Random number to be used to reproduce the shuffling procedure in the exact way (default: 10)
+	--seed		Random number to be used to reproduce the shuffling procedure in the exact way
 
 
 Dependencies:
