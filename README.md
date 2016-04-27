@@ -21,6 +21,12 @@ For example:
 
      nextflow run cbcrg/shootstrap -with-docker
 
+This command will run the analysis for the "hip.fa" dataset contained in the data/dataset directory, and will generate a reference tree, with estimated shootstrap support values for every branch in it.
+
+     nextflow run shootstrap.nf -with-docker --in_tree data/tree/hip.tree 
+     
+The 2nd command will estimate the hootstrap support values for every branch in the given "hip.tree".
+
 Command line options:
 ---------------------
 
