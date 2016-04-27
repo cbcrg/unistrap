@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-use List::Util 'shuffle';
+#use List::Util 'shuffle';
 
 ($aln_file, $out_file, $seed, $replicate_num)=@ARGV;
 
@@ -14,6 +14,7 @@ $/=">";
 open ALNseq, $aln_file;
 
 $count=0;
+@arr=();
 while (<ALNseq>)
 {   
     $sequence=""; $title="";
@@ -28,26 +29,37 @@ while (<ALNseq>)
    {     $count++;
 	 $ALNhash{$title}=$sequence;
  	 $NAMhash{$count}=$title;
+	 $arr[$count-1]=$count; 
 	 #print  "$count : ".$title."  $sequence\n";
    }
 } 
 
 $/="\n"; #print "Reading of MSA file DONE!!\n"; 
 
-$seed_to_use=$replicate_num+$seed;
+if($seed<-1){
+    print "Error the seed cannot be a negative number!\n";
+    exit;
+}
+elsif($seed==-1){
+    ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+    $date_string=$hour+$min+$sec; 
+
+    $seed_to_use=$date_string+$seed;
+}
+else{		
+    $seed_to_use=$replicate_num+$seed;
+}
 
 for($i=0; $i<$replicate_num; $i++)
 {
     srand($seed_to_use+$i); 
- 
+    use List::Util 'shuffle';
+     
     $num=$i+1;
     open OUT, ">", "${out_file}_$num.fa" or die $!; 
 
-    @values = shuffle(values %NAMhash);
-    $NAMhash{$_} = shift @values for keys %NAMhash;
-
-    foreach ( keys %NAMhash) {
-      print OUT ">$NAMhash{$_}\n$ALNhash{$NAMhash{$_}}\n";
+    foreach ( shuffle @arr) {
+      print OUT  "$_ >$NAMhash{$_}\n$ALNhash{$NAMhash{$_}}\n";
     }
     close(OUT);
 }
