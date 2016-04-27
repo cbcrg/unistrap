@@ -1,7 +1,7 @@
 Shootstrap-NF
 ===================
 
-Given a protein sequence dataset, Shootstrap-NF estimates a reference phylogenetic tree and the shootstrap support of every branch in that tree. The shootsrap support is a generalized version of Felsenstein branch bootstrap support measure that simultaneously takes into account the sequence order input effect (shuffling) and the column sampling effect (Felsenstein regular Bootstrap) to provide a support value for every branch in a reference tree. 
+Given a protein sequence dataset, Shootstrap-NF estimates a reference phylogenetic tree and the shootstrap support of every branch in that tree. The shootsrap support is a generalized version of Felsenstein branch bootstrap support measure that simultaneously takes into account the sequence input-order effect (shuffling) and the column sampling effect (Felsenstein regular Bootstrap) to provide a support value for every branch in a reference tree. 
 
 In practice, the procedure involves generating N shuffled input sequence datasets, from which as many replicate MSAs are generated and used to generate as many trees. These trees are compared using RF and the one with the highest average similarity is selected as a refence. The replicate shuffled MSAs are then used to draw bootstrap replicates. These replicates are used to estimate shootstrap  support values for every branch of the reference tree. 
 
