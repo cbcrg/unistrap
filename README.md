@@ -25,7 +25,7 @@ This command will run the analysis for the "hip.fa" dataset contained in the dat
 
      nextflow run shootstrap.nf -with-docker --in_tree data/tree/hip.tree 
      
-The 2nd command will estimate the hootstrap support values for every branch in the given "hip.tree". Note that in order for this command to run the repository has to fisrt be cloned.
+The 2nd command will estimate the hootstrap support values for every branch in the given "hip.tree". Note that in order for this command to run the repository has to first be cloned.
 
 Command line options:
 ---------------------
