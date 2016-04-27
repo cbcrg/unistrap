@@ -1,11 +1,11 @@
 Shootstrap-NF
 ===================
 
-A workflow for simultaneous MSA and tree generation, and tree reliability estimation. 
-Shootstrap-NF generates alignment models, that allow it to estimate the phylogenetic tree having the most supported topology. 
-In addition it "dresses" that tree with shootstrap support values, which takes into account boostrapping and alignmnet uncertainty effects.
+Given a protein sequence dataset, Shootstrap-NF estimates a reference phylogenetic tree and the shootstrap support of every branch in that tree. The shootsrap support is a generalized version of Felsenstein branch bootstrap support measure that simultaneously takes into account the sequence order input effect (shuffling) and the column sampling effect (Felsenstein regular Bootstrap) to provide a support value for every branch in a reference tree. 
 
-How to use
+In practice, the procedure involves generating N shuffled input sequence datasets, from which as many replicate MSAs are generated and used to generate as many trees. These trees are compared using RF and the one with the highest average similarity is selected as a refence. The replicate shuffled MSAs are then used to draw bootstrap replicates. These replicates are used to estimate shootstrap  support values for every branch of the reference tree. 
+
+USAGE
 -----------
     
 You can run Shootstrap-NF using the following command: 
