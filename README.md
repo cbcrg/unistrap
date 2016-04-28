@@ -53,7 +53,7 @@ Command line options:
 Dependencies:
 -------------
 
-Shootstrap-NF uses the following external programs (which have to exist in the "path" if the pipeline is executed without docker):
+Shootstrap-NF uses the following external programs (which have to exist in the PATH if the pipeline is executed without docker):
 
 	clustalo	http://www.clustal.org/omega/clustal-omega-1.2.1.tar.gz
 	t-coffee	http://www.tcoffee.org/Packages/Stable/Version_11.00.8cbe486/linux/T-COFFEE_installer_Version_11.00.8cbe486_linux_x64.tar.gz
