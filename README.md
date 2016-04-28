@@ -32,7 +32,7 @@ This command will run (by automatically cloning the respository in your workstat
      nextflow run shootstrap.nf -with-docker --in_dir data/dataset/hip.fa --in_tree data/tree/hip.tree 
 
 The 1st command will run the analysis for the "hip.fa" example dataset contained in the data/dataset directory, and will generate a reference tree, with estimated shootstrap support values for every branch in it.
-The 2nd command will estimate the shootstrap support values for every branch in the given "hip.tree" example tree, contained in the data/tree directory. Note that in order for these commands to run the repository has to first be cloned and then to launch them from inside the shootstrap repository. 
+The 2nd command will estimate the shootstrap support values for every branch in the given "hip.tree" example tree, contained in the data/tree directory. Note that in order for these commands to run the repository has to first be cloned and then to launch them from inside it. 
 
 Command line options:
 ---------------------
