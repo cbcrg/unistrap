@@ -9,7 +9,8 @@ Installation
 -----------
 
 To run shootstrap-NF you need to install nextflow, by simply checking if you have Java 7+ and if yes, by then typing the following command:
-		curl -fsSL get.nextflow.io | bash
+
+	curl -fsSL get.nextflow.io | bash
 
 If you want to replicate exactly the pipeline and/or not install all the dependencies shootstrap-NF has, then you also need to install Docker and run shootstrap-NF with the '-with-docker' flag, as demonstrated below. Otherwise all the dependencies of shootstrap-NF have to be installed and put in the PATH.
 
@@ -31,7 +32,7 @@ This command will run (by automatically cloning the respository in your workstat
      nextflow run shootstrap.nf -with-docker --in_dir data/dataset/hip.fa --in_tree data/tree/hip.tree 
 
 The 1st command will run the analysis for the "hip.fa" dataset contained in the data/dataset directory, and will generate a reference tree, with estimated shootstrap support values for every branch in it.
-The 2nd command will estimate the hootstrap support values for every branch in the given "hip.tree". Note that in order for these commands to run the repository has to first be cloned and then to launch them from inside the shootstrap repository. 
+The 2nd command will estimate the shootstrap support values for every branch in the given "hip.tree". Note that in order for these commands to run the repository has to first be cloned and then to launch them from inside the shootstrap repository. 
 
 Command line options:
 ---------------------
