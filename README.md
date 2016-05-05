@@ -66,5 +66,5 @@ Bonus
 
 You can access the container by running this command: 
 
-	docker run -ti --entrypoint /bin/bash cbcrg/shootstrap-nf
+	docker run -ti cbcrg/shootstrap-nf bash
 
