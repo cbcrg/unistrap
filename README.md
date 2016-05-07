@@ -1,6 +1,9 @@
 Shootstrap-NF
 ===================
 
+[![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.18.0-brightgreen.svg)](http://nextflow.io)
+![CircleCI status](https://circleci.com/gh/cbcrg/shootstrap.png?style=shield)
+
 A workflow for simultaneous MSA and tree generation, and tree reliability estimation. 
 Shootstrap-NF generates alignment models, that allow it to estimate the phylogenetic tree having the most supported topology. 
 In addition it "dresses" that tree with shootstrap support values, which takes into account boostrapping and alignmnet uncertainty effects.
