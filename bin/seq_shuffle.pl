@@ -59,7 +59,7 @@ for($i=0; $i<$replicate_num; $i++)
     open OUT, ">", "${out_file}_$num.fa" or die $!; 
 
     foreach ( shuffle @arr) {
-      print OUT  "$_ >$NAMhash{$_}\n$ALNhash{$NAMhash{$_}}\n";
+      print OUT  ">$NAMhash{$_}\n$ALNhash{$NAMhash{$_}}\n";
     }
     close(OUT);
 }
