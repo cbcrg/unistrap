@@ -1,6 +1,10 @@
 Shootstrap-NF
 ===================
 
+[![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.18.0-brightgreen.svg)](http://nextflow.io)
+![CircleCI status](https://circleci.com/gh/cbcrg/shootstrap.png?style=shield)
+
+
 Given a protein sequence dataset, Shootstrap-NF estimates a reference phylogenetic tree and the shootstrap support of every branch in that tree. The shootsrap support is a generalized version of Felsenstein branch bootstrap support measure that simultaneously takes into account the alignment uncerainty effect and the column sampling effect (Felsenstein regular Bootstrap) to provide a support value for every branch in a reference tree. 
 
 In practice, the procedure involves generating N shuffled input sequence datasets, from which as many replicate MSAs are generated and used to generate as many trees. These trees are compared using Robinson and Foulds (RF) and the one with the highest average similarity (most suported tree topology) is selected as a refence. The replicate shuffled MSAs are then used to draw bootstrap replicates. These replicates are used to estimate shootstrap support values for every branch of the reference tree. 
