@@ -53,6 +53,10 @@ Command line options:
 
 	--seed		Seed for random number generation, (default: time )
 
+Pipeline flow
+--------------
+
+![alt shootstrap](images/dag.png)
 
 Dependencies:
 -------------
