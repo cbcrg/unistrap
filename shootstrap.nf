@@ -27,7 +27,6 @@
  */
 
 params.in_dir="$baseDir/data/dataset/*"
-params.out_dir="Shootstrap_Analysis_Results"
 params.rep_num=2
 params.seed=10
 params.aligner="clustalo"
@@ -44,7 +43,6 @@ in_tree_file = params.in_tree ? file(params.in_tree) : null
 if( in_tree_file ) assert in_tree_file.exists(), "The tree file does not exist: $in_tree_file !!!" 
 
 process get_shuffle_replicates{
-  publishDir params.out_dir, mode: 'copy'
 
   input:
       file(seq_file) from file_names
@@ -60,7 +58,6 @@ process get_shuffle_replicates{
 }
 
 process get_msa_replicates{
-  publishDir params.out_dir, mode: 'copy'
 
   input:
       file(seq_file) from shuffle_replicates
@@ -72,7 +69,6 @@ process get_msa_replicates{
 }
 
 process get_msa_trees{
-  publishDir params.out_dir, mode: 'copy'
 
   input:
       file(seq_file) from msa_replicates
@@ -86,7 +82,6 @@ process get_msa_trees{
 
 
 process get_stable_msa_trees{
-  publishDir params.out_dir, mode: 'copy'
 
   input:
       file(in_tree_file) from msa_trees
@@ -106,7 +101,6 @@ process get_stable_msa_trees{
 
 // Create X replicates for each MSA replicate
 process get_seqboot_replicates{
-  publishDir params.out_dir, mode: 'copy'
 
   input:
       file(seq_file) from msa_replicates2
@@ -122,7 +116,6 @@ process get_seqboot_replicates{
 
 
 process get_replicate_trees{
-  publishDir params.out_dir, mode: 'copy'
 
   input:
       file(seq_file) from replicates
@@ -136,7 +129,6 @@ process get_replicate_trees{
 
 
 process get_shootstrap_tree{
-  publishDir params.out_dir, mode: 'copy'
 
   input:
       file(all_tree_file) from trees.collectFile(name: 'big.tree')
