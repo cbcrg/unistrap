@@ -31,7 +31,9 @@ params.rep_num=2
 params.seed=10
 params.aligner="clustalo"
 params.in_tree="" 
+params.stats=false 
 
+println( params.out_dir )
 
 Channel
 	.fromPath(params.in_dir)
@@ -41,6 +43,37 @@ Channel
     
 in_tree_file = params.in_tree ? file(params.in_tree) : null
 if( in_tree_file ) assert in_tree_file.exists(), "The tree file does not exist: $in_tree_file !!!" 
+
+
+
+def get_aln_prefix(name) { 
+  def m = name =~ /(.*)_\d+\.fa\.aln/
+  m.matches() ? m.group(1) : 'unknown' 
+}
+
+def get_tree_prefix(name) { 
+  def m = name =~ /(.*)_\d+\.fa\.aln.*/
+  m.matches() ? m.group(1) : 'unknown_tree_name' 
+}
+
+
+
+def combine_trees( allFiles ) {
+  def prefix = get_tree_prefix(allFiles[0].name)
+  println(prefix)
+  def bigTree = java.nio.file.Files.createTempFile(prefix,".tree")
+ 
+  def result = []
+  allFiles.each {  
+    bigTree << it.text  
+    result << [ it, bigTree ]
+  }
+  result
+}
+
+
+
+
 
 process get_shuffle_replicates{
 
@@ -62,11 +95,12 @@ process get_msa_replicates{
   input:
       file(seq_file) from shuffle_replicates
   output:
-      file "${seq_file}.aln" into msa_replicates, msa_replicates2
+      file "${seq_file}.aln" into msa_replicates, msa_replicates2, msa_replicates3
   
   script:
       template "${params.aligner}_msa_command"
 }
+
 
 process get_msa_trees{
 
@@ -81,11 +115,17 @@ process get_msa_trees{
 }
 
 
+msa_trees.map { file -> tuple(file.name[0], file) }
+         .groupTuple()
+         .flatMap { prefix, files -> combine_trees(files) }
+         .view()
+         .set{ msa_all_trees }
+
+
 process get_stable_msa_trees{
 
   input:
-      file(in_tree_file) from msa_trees
-      file(all_tree_file) from msa_trees2.collectFile(name: 'big.tree').first()
+      set file(in_tree_file), file(all_tree_file) from msa_all_trees
       
   output:
       set file("*.stable.tree") into stable_trees
@@ -98,6 +138,7 @@ process get_stable_msa_trees{
       cat  $tmp_name.stable.tree | sed 's/)/\\n/g' | sed 's/;//g' | awk -F: '{print $1}' | grep -v "(" | grep -v "^$" | awk '{ sum=sum+$1 ; sumX1+=(($2)^2)} END { avg=sum/NR; printf "%f\\n", avg}' 
   '''
 }
+
 
 // Create X replicates for each MSA replicate
 process get_seqboot_replicates{
@@ -128,17 +169,46 @@ process get_replicate_trees{
 } 
 
 
+
+trees.map { file -> tuple(get_tree_prefix(file.name), file) }
+         .groupTuple()
+         .flatMap { prefix, files -> combine_trees(files) }
+         .view()
+         .set{ all_trees }
+
+
+
 process get_shootstrap_tree{
 
   input:
-      file(all_tree_file) from trees.collectFile(name: 'big.tree')
-      set val(score), file(tree) from in_tree_file ? Channel.value([100, in_tree_file]) : most_stable_tree.max { it[0].trim().toFloat() }
+      set file(in_tree_file), file(all_tree_file) from all_trees
+      
   output:
       file "*.shootstrap.tree" into shootstrap_tree
   
   shell:
   '''
-      tmp_name=`basename !{tree} | awk -F. '{print $1}'`
-      perl -I !{baseDir}/bin/ !{baseDir}/bin/CompareToBootstrap.pl -tree !{tree} -boot !{all_tree_file} > $tmp_name.shootstrap.tree
+      tmp_name=`basename !{in_tree_file} | awk -F. '{print $1}'`
+      perl -I !{baseDir}/bin/ !{baseDir}/bin/CompareToBootstrap.pl -tree !{in_tree_file} -boot !{all_tree_file} > $tmp_name.shootstrap.tree
+  '''
+} 
+
+
+process get_stability_stats{
+
+  when:
+  params.stats 
+
+  input:
+      set prefix,file(msa) from msa_replicates3.map{ file -> tuple(get_aln_prefix(file.name), file) }.groupTuple()
+
+  output:
+      file "${prefix}_insta.txt" 
+  
+
+  shell:
+  '''
+      echo -n !{prefix}" " >> !{prefix}_insta.txt 
+      for j in {1..!{params.rep_num}};{ for r in {1..!{params.rep_num}};{ [ $j != $r ] && msaa -a !{prefix}_$j.fa.aln -r !{prefix}_$r.fa.aln; }; } |  awk '{ sum += $2 } END { if(NR>0) print sum/NR }' >> !{prefix}_insta.txt  
   '''
 } 
