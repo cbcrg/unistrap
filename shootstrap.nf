@@ -33,7 +33,6 @@ params.aligner="clustalo"
 params.in_tree="" 
 params.stats=false 
 
-println( params.out_dir )
 
 Channel
 	.fromPath(params.in_dir)
