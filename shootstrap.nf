@@ -33,7 +33,8 @@ params.seed=10
 params.aligner="clustalo"
 params.in_tree="" 
 params.stats=false 
-
+params.boot=false 
+params.boot_datasets="all"
 
 Channel
 	.fromPath(params.in_dir)
@@ -100,7 +101,7 @@ process get_msa_replicates{
   input:
       file(seq_file) from shuffle_replicates
   output:
-      file "${seq_file}.aln" into msa_replicates, msa_replicates2, msa_replicates3, msa_replicates4
+      file "${seq_file}.aln" into msa_replicates, msa_replicates2, msa_replicates3, msa_replicates4, msa_replicates5
   
   script:
       template "${params.aligner}_msa_command"
@@ -157,7 +158,7 @@ process get_shuffle_trees{
 /*
  * Step 5. Bootstrap replicates generation. Create 1 bootstrap replicate from each MSA replicate, using "seqboot" from PHYLIP package.
  */
-process get_seqboot_replicates{
+process get_1_seqboot_replicates{
 
   input:
       file(seq_file) from msa_replicates2
@@ -181,7 +182,7 @@ process get_bootstrap_trees{
   input:
       file(seq_file) from boot_replicates
   output:
-      file "${seq_file}.tree" into trees
+      file "${seq_file}.tree" into boot_trees
   
   script:
       output_tree="${seq_file}.tree"
@@ -193,18 +194,18 @@ process get_bootstrap_trees{
 /*
  * Step 7. Shootstrap tree generation. Create 1 bootstrap tree from each bootstrap replicate, using "seqboot" from PHYLIP package.
  */
-trees.map { file -> tuple(get_prefix(file.name), file) }
+boot_trees.map { file -> tuple(get_prefix(file.name), file) }
          .groupTuple()
          .flatMap { prefix, files -> combine_trees(files) }
          .set{ all_trees }
 
-process get_shootstrap_tree{
+process get_shootstrap_trees{
 
   input:
       set file(in_tree_file), file(all_tree_file) from all_trees
       
   output:
-      file "*.shootstrap.tree" into shootstrap_tree
+      file "*.shootstrap.tree" into shootstrap_trees
   
   shell:
   '''
@@ -215,8 +216,73 @@ process get_shootstrap_tree{
 
 
 
+/**************************************************************************
+ *                                                                        *
+ *            The next processes estimate different statistics.           *
+ *           They only run when the option "stats" is specified.          *
+ *                                                                        *
+ **************************************************************************/
+
+
 /*
- * Step 8. MSA stability estimation. Estimates the MSA stability of each dataset. 
+ * Step 8. Normal bootstrap replicates generation. Create 100 bootstrap replicates from each MSA replicate, using "seqboot" from PHYLIP package.
+ */
+
+process get_100_seqboot_replicates{
+  
+  input:
+      file(seq_file) from msa_replicates5
+  output:
+      file "${seq_file}.boot_replicate" into norm_boot_replicates
+  
+  """
+      if [ ${params.boot_datasets} == "all" ] 
+      then
+          echo -e "$seq_file\nR\n1\nY\n31\n"|seqboot
+          mv outfile ${seq_file}.boot_replicate
+      else
+          for seq_set in $params.boot_datasets
+          {
+              echo -e "$seq_file\nR\n1\nY\n31\n"|seqboot
+              mv outfile ${seq_file}.boot_replicate
+          }    
+      fi    
+  """
+}
+
+
+
+/*
+ * Step 9. Normal bootstrap trees generation. Create 1 bootstrap tree from each bootstrap replicate, using one the template tree estimator programs (default : FastTree).
+ */
+process get_norm_bootstrap_trees{
+
+  when:
+  params.boot
+  
+  input:
+      file(seq_file) from norm_boot_replicates
+  output:
+      file "${seq_file}.tree" into norm_boot_trees
+  
+  script:
+      output_tree="${seq_file}.bootstrap.tree"
+      template "tree_commands"
+} 
+
+
+
+
+/**************************************************************************
+ *                                                                        *
+ *            The next processes estimate different statistics.           *
+ *           They only run when the option "stats" is specified.          *
+ *                                                                        *
+ **************************************************************************/
+
+
+/*
+ * Step 10. MSA stability estimation. Estimates the MSA stability of each dataset. 
  */
 process get_msa_stability_stats{
 
@@ -241,7 +307,7 @@ insta.collectFile(name:'MSA_INSTABILITY.stats', seed:"Name\tmsaInstability\n", s
 
 
 /*
- * Step 9. Tree stability estimation. Estimates the Tree stability of each the replicate trees. 
+ * Step 11. Tree stability estimation. Estimates the Tree stability of each the replicate trees. 
  */
 process get_tree_stability_stats{
 
@@ -264,9 +330,58 @@ process get_tree_stability_stats{
 tree_insta.collectFile(name:'TREE_INSTABILITY.stats', seed:"Name\ttreeInstability\n", storeDir:params.out_dir) 
 
 
+/*
+ * Step 12. Average bootstrap value estimation. The average shootstrap value from all the shootstrap trees is estimated. 
+ */
+process get_tree_bootstrap_stats{
+
+  when:
+  params.stats && params.boot
+
+  input:
+      set prefix,file(msa) from norm_boot_trees.map{ file -> tuple(get_tree_prefix(file.name), file) }.groupTuple()
+
+  output:
+      file "${prefix}_insta.txt" into tree_avg_bootstrap
+
+  shell:
+  '''
+      echo -n !{prefix}"\t" >> !{prefix}_insta.txt 
+      for r in {1..!{params.rep_num}}; { cat !{prefix}_$r.fa.aln.replicate.tree | sed 's/);//g' |sed 's/):0.0//g' | sed 's/)/\\n/g' | awk -F: '{print "|"$1}' | grep -v "(" | awk -F"|" '{ sum+=$2} END { print sum/NR }';  } | awk '{ sum+=$1} END { printf sum/NR"\\n"}' >> !{prefix}_insta.txt  
+  '''
+} 
+
+tree_avg_bootstrap.collectFile(name:'TREE_AVG_BOOTSTRAP.stats', seed:"Name\ttreeAvgShootstrap\n", storeDir:params.out_dir) 
+
+
 
 /*
- * Step 10. MSA identity and number of sequences estimation. Estimates the MSA stability of each dataset and reports how many sequences each dataset contains.
+ * Step 13. Average shoostrap value estimation. The average shootstrap value from all the shootstrap trees is estimated. 
+ */
+process get_tree_shootstrap_stats{
+
+  when:
+  params.stats 
+
+  input:
+      set prefix,file(msa) from shootstrap_trees.map{ file -> tuple(get_tree_prefix(file.name), file) }.groupTuple()
+
+  output:
+      file "${prefix}_insta.txt" into tree_avg_shootstrap
+
+  shell:
+  '''
+      echo -n !{prefix}"\t" >> !{prefix}_insta.txt 
+      for r in {1..!{params.rep_num}}; { cat !{prefix}_$r.shootstrap.tree | sed 's/);//g' |sed 's/):0.0//g' | sed 's/)/\\n/g' | awk -F: '{print "|"$1}' | grep -v "(" | awk -F"|" '{ sum+=$2} END { print sum/NR }';  } | awk '{ sum+=$1} END { printf sum/NR"\\n"}' >> !{prefix}_insta.txt  
+  '''
+} 
+
+tree_avg_shootstrap.collectFile(name:'TREE_AVG_SHOOTSTRAP.stats', seed:"Name\ttreeAvgShootstrap\n", storeDir:params.out_dir) 
+
+
+
+/*
+ * Step 12. MSA identity and number of sequences estimation. Estimates the MSA stability of each dataset and reports how many sequences each dataset contains.
  */
 process get_general_stats{
 
