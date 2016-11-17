@@ -404,3 +404,7 @@ process get_general_stats{
 
 genStats.collectFile(name:'GENERAL.stats', seed:"Name\tseqNum\tmsaIdentity\n", storeDir:params.out_dir) 
 
+
+workflow.onComplete { 
+	println ( workflow.success ? "Done!" : "Oops .. something went wrong" )
+}
