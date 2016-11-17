@@ -60,12 +60,12 @@ def get_tree_prefix(name) {
 
 def combine_trees( allFiles ) {
 
-  def prefix = get_prefix(allFiles[0].name)
-  def bigTree = java.nio.file.Files.createTempFile(prefix,".tree")
- 
-  def result = []
+  final prefix = get_prefix(allFiles[0].name)
+  final bigTree = cacheableFile(allFiles, "${prefix}.tree") //java.nio.file.Files.createTempFile(prefix,".tree")
+  final isCached = bigTree.exists()
+  final result = []
   allFiles.each {  
-    bigTree << it.text  
+    if(!isCached) bigTree << it.text  
     result << [ it, bigTree ]
   }
   result
