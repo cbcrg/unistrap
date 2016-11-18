@@ -1,0 +1,2 @@
+#!/bin/bash
+FastTree -n $boot_num $seq_file > ${output_tree}

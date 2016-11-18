@@ -35,6 +35,7 @@ params.in_tree=""
 params.stats=false 
 params.boot=false 
 params.boot_datasets="all"
+params.boot_num=100
 
 Channel
 	.fromPath(params.in_dir)
@@ -161,7 +162,7 @@ process get_shuffle_trees{
 
 
 /*
- * Step 5. Bootstrap replicates generation. Create 1 bootstrap replicate from each MSA replicate,  using "seqboot" from PHYLIP package.
+ * Step 5. Bootstrap replicates MSAs generation. Create 1 bootstrap replicate from each MSA replicate,  using "seqboot" from PHYLIP package.
  */
 process get_1_seqboot_replicates{
 
@@ -180,7 +181,7 @@ process get_1_seqboot_replicates{
 
 
 /*
- * Step 6. Bootstrap trees generation. Create 1 bootstrap tree from each bootstrap replicate, using one the template tree estimator programs (default : FastTree).
+ * Step 6. Bootstrap replicate trees generation. Create 1 bootstrap tree from each bootstrap replicate, using one the template tree estimator programs (default : FastTree).
  */
 process get_1_bootstrap_replicate_trees{
 
@@ -230,7 +231,7 @@ process get_shootstrap_trees{
 
 
 /*
- * Step 8. Normal bootstrap replicates generation. Create 100 bootstrap replicates from each MSA replicate, using "seqboot" from PHYLIP package. 
+ * Step 8. Bootstrap replicates MSAs generation. Create X (default: 100) bootstrap replicates from each MSA replicate, using "seqboot" from PHYLIP package. 
  */
 
 process get_100_seqboot_replicates{
@@ -243,12 +244,12 @@ process get_100_seqboot_replicates{
   """
       if [ ${params.boot_datasets} == "all" ] 
       then
-          echo -e "$seq_file\nR\n1\nY\n31\n"|seqboot
+          echo -e "$seq_file\nR\n$params.boot_num\nY\n31\n"|seqboot
           mv outfile ${seq_file}.boot_replicate
       else
           for seq_set in $params.boot_datasets
           {
-              echo -e "$seq_file\nR\n1\nY\n31\n"|seqboot
+              echo -e "$seq_file\nR\n$params.boot_num\nY\n31\n"|seqboot
               mv outfile ${seq_file}.boot_replicate
           }    
       fi    
@@ -272,7 +273,8 @@ process get_100_bootstrap_replicate_trees{
   
   script:
       output_tree="${seq_file}.bootstrap.tree"
-      template "tree_commands"
+      boot_num="${params.boot_num}"
+      template "tree_bootstrap_commands"
 } 
 
 
