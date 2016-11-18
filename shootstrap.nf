@@ -172,7 +172,8 @@ process get_1_seqboot_replicates{
       file "${seq_file}.replicate" into boot_replicates
   
   """
-      echo -e "$seq_file\nR\n1\nY\n31\n"|seqboot
+      shuf_num=`ls $seq_file| awk -F"." '{print \$1}' | awk -F"_" '{print \$2}'`
+      echo -e "$seq_file\nR\n\$shuf_num\nY\n31\n"|seqboot
       mv outfile ${seq_file}.replicate
   """
 
@@ -383,7 +384,7 @@ process get_tree_bootstrap_stats{
   '''
 } 
 
-tree_avg_bootstrap.collectFile(name:'TREE_AVG_BOOTSTRAP.stats', seed:"Name\ttreeAvgShootstrap\n", storeDir:params.out_dir) 
+tree_avg_bootstrap.collectFile(name:'TREE_AVG_BOOTSTRAP.stats', seed:"Name\ttreeAvgBootstrap\n", storeDir:params.out_dir) 
 
 
 
