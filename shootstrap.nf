@@ -302,7 +302,7 @@ process get_100_seqboot_replicates{
 /*
  * Step 9. Normal bootstrap trees generation. Create 100 bootstrap trees from the 100 bootstrap replicates, using one the template tree estimator programs (default : FastTree).
  */
-process get_100_bootstrap_replicate_trees{
+process get_100_bootstrap_rep_trees{
 
   when:
   params.boot
@@ -310,7 +310,7 @@ process get_100_bootstrap_replicate_trees{
   input:
       file(seq_file) from norm_boot_replicates
   output:
-      file "${seq_file}.bootstrap.tree" into norm_boot_trees
+      file "${seq_file}.bootstrap.tree" into norm_boot_rep_trees
   
   script:
       output_tree="${seq_file}.bootstrap.tree"
@@ -322,10 +322,10 @@ process get_100_bootstrap_replicate_trees{
 /*
  * Step 10. Bootstrap values estimation. Calculates the bootstrap values for each replicate tree, using "Fast Tree-Comparison Tools" from FastTree package.
  */
-norm_boot_trees.map { file -> tuple(get_bootTree_prefix(file.name), file) }
+norm_boot_rep_trees.map { file -> tuple(get_bootTree_prefix(file.name), file) }
          .groupTuple()
          .flatMap { prefix, files -> combine_boot_trees(files) }
-         .set{ all_100_boot_rep_trees }
+         .set{ all_norm_boot_rep_trees }
 
 process get_bootstrap_trees{
 
