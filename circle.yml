@@ -7,4 +7,4 @@ machine:
 test:
   override:
     - curl -fsSL get.nextflow.io | bash
-    - ./nextflow run . -with-docker
+    - ./nextflow run . -with-docker --rep_num 10
