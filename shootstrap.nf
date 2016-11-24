@@ -44,8 +44,7 @@ Channel
     
     
 in_tree_file = params.in_tree ? file(params.in_tree) : null
-if( in_tree_file ) assert in_tree_file.exists(), "The tree file does not exist: $in_tree_file !!!" 
-
+assert !in_tree_file || in_tree_file.exists(), "The tree file does not exist: $in_tree_file !!!" 
 
 
 def get_prefix(name) { 
@@ -67,7 +66,7 @@ def get_bootTree_prefix(name) {
 def combine_msa_trees( allFiles ) {
 
   final prefix = get_prefix(allFiles[0].name)
-  final bigTree = cacheableFile(allFiles, "${prefix}.all_msa_trees") //java.nio.file.Files.createTempFile(prefix,".tree")
+  final bigTree = cacheableFile(allFiles, "${prefix}.all_msa_trees")
   final isCached = bigTree.exists()
   final result = []
   allFiles.each {  
@@ -80,7 +79,7 @@ def combine_msa_trees( allFiles ) {
 def combine_boot_trees( allFiles ) {
 
   final prefix = get_prefix(allFiles[0].name)
-  final bigTree = cacheableFile(allFiles, "${prefix}.all_boot_trees") //java.nio.file.Files.createTempFile(prefix,".tree")
+  final bigTree = cacheableFile(allFiles, "${prefix}.all_boot_trees") 
   final isCached = bigTree.exists()
   final result = []
   allFiles.each {  
@@ -93,7 +92,7 @@ def combine_boot_trees( allFiles ) {
 def combine_rep_trees_by_prefix( allFiles ) {
 
   final prefix = get_prefix(allFiles[0].name)
-  final bigTree = cacheableFile(allFiles, "${prefix}.all_replicate_trees") //java.nio.file.Files.createTempFile(prefix,".tree")
+  final bigTree = cacheableFile(allFiles, "${prefix}.all_replicate_trees")
   final isCached = bigTree.exists()
   final result = []
   allFiles.each {  
@@ -228,11 +227,13 @@ boot_trees.map { file -> tuple(get_prefix(file.name), file) }
 
 
 msa_trees3.map { file -> tuple(get_prefix(file.name), file) }
-.view()
           .set{ all_msa_trees }
 
 
-all_boot_trees.phase(all_msa_trees).map { foo, bar -> tuple( foo[0], foo[1], bar[1] ) }. view().set{ all_msa_boot_trees }
+all_boot_trees
+      .phase(all_msa_trees)
+      .map { foo, bar -> tuple( foo[0], foo[1], bar[1] ) }
+      .set{ all_msa_boot_trees }
 
 
 process get_shootstrap_trees{
@@ -318,7 +319,6 @@ process get_100_bootstrap_replicate_trees{
 norm_boot_trees.map { file -> tuple(get_bootTree_prefix(file.name), file) }
          .groupTuple()
          .flatMap { prefix, files -> combine_boot_trees(files) }
-         .view()
          .set{ all_100_boot_rep_trees }
 
 process get_bootstrap_trees{
