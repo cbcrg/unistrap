@@ -35,7 +35,7 @@ params.in_tree=""
 params.stats=false 
 params.boot=false 
 params.boot_datasets="all"
-params.boot_num=100
+params.boot_num=2
 
 Channel
 	.fromPath(params.in_dir)
@@ -64,15 +64,41 @@ def get_bootTree_prefix(name) {
 }
 
 
-def combine_trees( allFiles ) {
+def combine_msa_trees( allFiles ) {
 
   final prefix = get_prefix(allFiles[0].name)
-  final bigTree = cacheableFile(allFiles, "${prefix}.tree") //java.nio.file.Files.createTempFile(prefix,".tree")
+  final bigTree = cacheableFile(allFiles, "${prefix}.all_msa_trees") //java.nio.file.Files.createTempFile(prefix,".tree")
   final isCached = bigTree.exists()
   final result = []
   allFiles.each {  
     if(!isCached) bigTree << it.text  
     result << [ it, bigTree ]
+  }
+  result
+}
+
+def combine_boot_trees( allFiles ) {
+
+  final prefix = get_prefix(allFiles[0].name)
+  final bigTree = cacheableFile(allFiles, "${prefix}.all_boot_trees") //java.nio.file.Files.createTempFile(prefix,".tree")
+  final isCached = bigTree.exists()
+  final result = []
+  allFiles.each {  
+    if(!isCached) bigTree << it.text  
+    result << [ it, bigTree ]
+  }
+  result
+}
+
+def combine_rep_trees_by_prefix( allFiles ) {
+
+  final prefix = get_prefix(allFiles[0].name)
+  final bigTree = cacheableFile(allFiles, "${prefix}.all_replicate_trees") //java.nio.file.Files.createTempFile(prefix,".tree")
+  final isCached = bigTree.exists()
+  final result = []
+  allFiles.each {  
+    if(!isCached) bigTree << it.text  
+    result << [ prefix, bigTree ]
   }
   result
 }
@@ -94,9 +120,7 @@ process get_shuffle_replicates{
       tmp_name=`basename !{seq_file} | awk -F. '{print $1}'`
       seq_shuffle.pl !{seq_file} ${tmp_name} !{params.seed} !{params.rep_num}
   '''
-
 }
-
 
 
 /*
@@ -114,7 +138,6 @@ process get_msa_replicates{
 }
 
 
-
 /*
  * Step 3. Replicate trees generation. Estimates a phylogenetic tree from each one of the replicate MSAs, using one the template tree estimator programs (default : FastTree).
  */
@@ -123,13 +146,12 @@ process get_msa_trees{
   input:
       file(seq_file) from msa_replicates
   output:
-      file "${seq_file}.msa_tree" into msa_trees, msa_trees2
+      file "${seq_file}.msa_tree" into msa_trees, msa_trees3
   
   script:
       output_tree="${seq_file}.msa_tree"
       template "tree_commands"
 }
-
 
 
 /*
@@ -139,7 +161,7 @@ process get_msa_trees{
  */
 msa_trees.map { file -> tuple(get_prefix(file.name), file) }
          .groupTuple()
-         .flatMap { prefix, files -> combine_trees(files) }
+         .flatMap { prefix, files -> combine_msa_trees(files) }
          .set{ msa_all_trees }
 
 process get_shuffle_trees{
@@ -150,6 +172,7 @@ process get_shuffle_trees{
   output:
       set file("*.stable.tree") into stable_trees
       set stdout, file(in_tree_file) into most_stable_tree
+      file "${all_tree_file}"
   
   shell:
   '''
@@ -160,9 +183,8 @@ process get_shuffle_trees{
 }
 
 
-
 /*
- * Step 5. Bootstrap replicates MSAs generation. Create 1 bootstrap replicate from each MSA replicate,  using "seqboot" from PHYLIP package.
+ * Step 5. Bootstrap replicates MSAs generation. Create 1 bootstrap replicate from each MSA replicate, using "seqboot" from PHYLIP package.
  */
 process get_1_seqboot_replicates{
 
@@ -172,13 +194,12 @@ process get_1_seqboot_replicates{
       file "${seq_file}.replicate" into boot_replicates
   
   """
-      shuf_num=`ls $seq_file| awk -F"." '{print \$1}' | awk -F"_" '{print \$2}'`
-      echo -e "$seq_file\nR\n\$shuf_num\nY\n31\n"|seqboot
+      #shuf_num=`ls $seq_file| awk -F"." '{print \$1}' | awk -F"_" '{print \$2}'`
+      echo -e "$seq_file\nR\n1\nY\n31\n"|seqboot
       mv outfile ${seq_file}.replicate
   """
 
 }
-
 
 
 /*
@@ -197,22 +218,31 @@ process get_1_bootstrap_replicate_trees{
 } 
 
 
-
 /*
  * Step 7. Shootstrap values estimation. Calculates the shootstrap values for each replicate tree, using "Fast Tree-Comparison Tools" from FastTree package.
  */
 boot_trees.map { file -> tuple(get_prefix(file.name), file) }
-         .groupTuple()
-         .flatMap { prefix, files -> combine_trees(files) }
-         .set{ all_trees }
+          .groupTuple()
+          .flatMap { prefix, files -> combine_rep_trees_by_prefix(files) }
+          .set{ all_boot_trees }
+
+
+msa_trees3.map { file -> tuple(get_prefix(file.name), file) }
+.view()
+          .set{ all_msa_trees }
+
+
+all_boot_trees.phase(all_msa_trees).map { foo, bar -> tuple( foo[0], foo[1], bar[1] ) }. view().set{ all_msa_boot_trees }
+
 
 process get_shootstrap_trees{
 
   input:
-      set file(in_tree_file), file(all_tree_file) from all_trees
+      set prefix, file(all_tree_file), file(in_tree_file) from all_msa_boot_trees
       
   output:
       file "*.shootstrap.tree" into shootstrap_trees
+      file "${all_tree_file}"
   
   shell:
   '''
@@ -220,6 +250,7 @@ process get_shootstrap_trees{
       perl -I !{baseDir}/bin/ !{baseDir}/bin/CompareToBootstrap.pl -tree !{in_tree_file} -boot !{all_tree_file} > $tmp_name.shootstrap.tree
   '''
 } 
+
 
 
 
@@ -237,6 +268,9 @@ process get_shootstrap_trees{
 
 process get_100_seqboot_replicates{
 
+  //when:         !! Still a bug !!
+  //params.boot
+
   input:
       file(seq_file) from msa_replicates5
   output:
@@ -250,13 +284,12 @@ process get_100_seqboot_replicates{
       else
           for seq_set in $params.boot_datasets
           {
-              echo -e "$seq_file\nR\n$params.boot_num\nY\n31\n"|seqboot
-              mv outfile ${seq_file}.boot_replicate
+                echo -e "$seq_file\nR\n$params.boot_num\nY\n31\n"|seqboot
+                mv outfile ${seq_file}.boot_replicate
           }    
       fi    
   """
 }
-
 
 
 /*
@@ -279,22 +312,26 @@ process get_100_bootstrap_replicate_trees{
 } 
 
 
-
 /*
  * Step 10. Bootstrap values estimation. Calculates the bootstrap values for each replicate tree, using "Fast Tree-Comparison Tools" from FastTree package.
  */
 norm_boot_trees.map { file -> tuple(get_bootTree_prefix(file.name), file) }
          .groupTuple()
-         .flatMap { prefix, files -> combine_trees(files) }
+         .flatMap { prefix, files -> combine_boot_trees(files) }
+         .view()
          .set{ all_100_boot_rep_trees }
 
 process get_bootstrap_trees{
+
+  when:
+  params.boot
 
   input:
       set file(in_tree_file), file(all_tree_file) from all_100_boot_rep_trees
       
   output:
       file "*.bootstrap.tree" into bootstrap_trees
+      file "${all_tree_file}"
   
   shell:
   '''
@@ -336,7 +373,6 @@ process get_msa_stability_stats{
 } 
 
 insta.collectFile(name:'MSA_INSTABILITY.stats', seed:"Name\tmsaInstability\n", storeDir:params.out_dir) 
-
 
 
 /*
@@ -430,7 +466,7 @@ process get_general_stats{
   shell:
   '''
       echo -n !{prefix}"\t" >> !{prefix}_insta.txt  
-      grep -P '^\\s+\\d+\\s+\\d+' !{prefix}_*.fa.aln | awk '{printf $2"\t"}'  >> !{prefix}_insta.txt 
+      grep -P '^\\s+\\d+\\s+\\d+' !{prefix}_*.fa.aln | awk '{printf $1"\t"}'  >> !{prefix}_insta.txt 
       msaa -a !{prefix}_*.fa.aln -i | grep aln | awk '{print $2}' >> !{prefix}_insta.txt 
   '''
 } 
