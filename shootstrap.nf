@@ -35,7 +35,7 @@ params.in_tree=""
 params.stats=false 
 params.boot=false 
 params.boot_datasets="all"
-params.boot_num=2
+params.boot_num=100
 
 Channel
 	.fromPath(params.in_dir)
@@ -188,17 +188,22 @@ process get_shuffle_trees{
  */
 process get_1_seqboot_replicates{
 
+  when:         
+  params.boot
+
   input:
       file(seq_file) from msa_replicates2
   output:
-      file "${seq_file}.replicate" into boot_replicates
+      file "${seq_file}.replicate" into boot_replicates   
   
+
+  script:
   """
-      #shuf_num=`ls $seq_file| awk -F"." '{print \$1}' | awk -F"_" '{print \$2}'`
-      echo -e "$seq_file\nR\n1\nY\n31\n"|seqboot
+      shuf_num=`ls $seq_file| awk -F"." '{print \$1}' | awk -F"_" '{print \$2}'`
+      [ \$((shuf_num%2)) -eq 0 ] && shuf_num=\$((\$shuf_num + 10001))
+      echo -e "$seq_file\nR\n1\nY\n\$shuf_num\n"|seqboot
       mv outfile ${seq_file}.replicate
   """
-
 }
 
 
@@ -268,14 +273,15 @@ process get_shootstrap_trees{
 
 process get_100_seqboot_replicates{
 
-  //when:         !! Still a bug !!
-  //params.boot
+  when:         
+  params.boot
 
   input:
       file(seq_file) from msa_replicates5
   output:
       file "${seq_file}.boot_replicate" into norm_boot_replicates
   
+  script:
   """
       if [ ${params.boot_datasets} == "all" ] 
       then
@@ -293,7 +299,7 @@ process get_100_seqboot_replicates{
 
 
 /*
- * Step 9. Normal bootstrap trees generation. Create 1 bootstrap tree from each bootstrap replicate, using one the template tree estimator programs (default : FastTree).
+ * Step 9. Normal bootstrap trees generation. Create 100 bootstrap trees from the 100 bootstrap replicates, using one the template tree estimator programs (default : FastTree).
  */
 process get_100_bootstrap_replicate_trees{
 
