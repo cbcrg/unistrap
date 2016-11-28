@@ -333,7 +333,7 @@ process get_bootstrap_trees{
   params.boot
 
   input:
-      set file(in_tree_file), file(all_tree_file) from all_100_boot_rep_trees
+      set file(in_tree_file), file(all_tree_file) from all_norm_boot_rep_trees
       
   output:
       file "*.bootstrap.tree" into bootstrap_trees
