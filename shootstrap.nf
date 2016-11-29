@@ -198,7 +198,7 @@ process get_1_seqboot_replicates{
 
   script:
   """
-      shuf_num=`ls $seq_file| awk -F"." '{print \$1}' | awk -F"_" '{print \$2}'`
+      shuf_num=`ls $seq_file| awk -F"." '{print \$1}' | awk -F"_" '{print \$NF}'`
       [ \$((shuf_num%2)) -eq 0 ] && shuf_num=\$((\$shuf_num + 10001))
       echo -e "$seq_file\nR\n1\nY\n\$shuf_num\n"|seqboot
       mv outfile ${seq_file}.replicate
