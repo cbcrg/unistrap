@@ -169,7 +169,7 @@ process get_shuffle_trees{
       set file(in_tree_file), file(all_tree_file) from msa_all_trees
       
   output:
-      set file("*.stable.tree") into stable_trees
+      file("*.stable.tree") into stable_trees
       set stdout, file(in_tree_file) into most_stable_tree
       file "${all_tree_file}"
   
