@@ -223,7 +223,7 @@ process get_1_bootstrap_replicate_trees{
 
 
 /*
- * Step 7. Unistrap values estimation. Calculates the shootstrap values for each replicate tree, using "Fast Tree-Comparison Tools" from FastTree package.
+ * Step 7. Unistrap values estimation. Calculates the unistrap values for each replicate tree, using "Fast Tree-Comparison Tools" from FastTree package.
  */
 boot_trees.map { file -> tuple(get_prefix(file.name), file) }
           .groupTuple()
@@ -247,13 +247,13 @@ process get_unistrap_trees{
       set prefix, file(all_tree_file), file(in_tree_file) from all_msa_boot_trees
       
   output:
-      file "*.shootstrap.tree" into shootstrap_trees
+      file "*.unistrap.tree" into unistrap_trees
       file "${all_tree_file}"
   
   shell:
   '''
       tmp_name=`basename !{in_tree_file} | awk -F. '{print $1}'`
-      perl -I !{baseDir}/bin/ !{baseDir}/bin/CompareToBootstrap.pl -tree !{in_tree_file} -boot !{all_tree_file} > $tmp_name.shootstrap.tree
+      perl -I !{baseDir}/bin/ !{baseDir}/bin/CompareToBootstrap.pl -tree !{in_tree_file} -boot !{all_tree_file} > $tmp_name.unistrap.tree
   '''
 } 
 
@@ -406,7 +406,7 @@ tree_insta.collectFile(name:'TREE_INSTABILITY.stats', seed:"Name\ttreeInstabilit
 
 
 /*
- * Step 13. Average bootstrap value estimation. The average shootstrap value from all the shootstrap trees is estimated. 
+ * Step 13. Average bootstrap value estimation. The average unistrap value from all the unistrap trees is estimated. 
  */
 process get_tree_bootstrap_stats{
 
@@ -431,27 +431,27 @@ tree_avg_bootstrap.collectFile(name:'TREE_AVG_BOOTSTRAP.stats', seed:"Name\ttree
 
 
 /*
- * Step 14. Average shoostrap value estimation. The average shootstrap value from all the shootstrap trees is estimated. 
+ * Step 14. Average shoostrap value estimation. The average unistrap value from all the unistrap trees is estimated. 
  */
-process get_tree_shootstrap_stats{
+process get_tree_unistrap_stats{
 
   when:
   params.stats 
 
   input:
-      set prefix,file(msa) from shootstrap_trees.map{ file -> tuple(get_tree_prefix(file.name), file) }.groupTuple()
+      set prefix,file(msa) from unistrap_trees.map{ file -> tuple(get_tree_prefix(file.name), file) }.groupTuple()
 
   output:
-      file "${prefix}_insta.txt" into tree_avg_shootstrap
+      file "${prefix}_insta.txt" into tree_avg_unistrap
 
   shell:
   '''
       echo -n !{prefix}"\t" >> !{prefix}_insta.txt 
-      for r in {1..!{params.rep_num}}; { cat !{prefix}_$r.shootstrap.tree | sed 's/);//g' |sed 's/):0.0//g' | sed 's/)/\\n/g' | awk -F: '{print "|"$1}' | grep -v "(" | awk -F"|" '{ sum+=$2} END { print sum/NR }';  } | awk '{ sum+=$1} END { printf sum/NR"\\n"}' >> !{prefix}_insta.txt  
+      for r in {1..!{params.rep_num}}; { cat !{prefix}_$r.unistrap.tree | sed 's/);//g' |sed 's/):0.0//g' | sed 's/)/\\n/g' | awk -F: '{print "|"$1}' | grep -v "(" | awk -F"|" '{ sum+=$2} END { print sum/NR }';  } | awk '{ sum+=$1} END { printf sum/NR"\\n"}' >> !{prefix}_insta.txt  
   '''
 } 
 
-tree_avg_shootstrap.collectFile(name:'TREE_AVG_UNISTRAP.stats', seed:"Name\ttreeAvgUnistrap\n", storeDir:params.out_dir) 
+tree_avg_unistrap.collectFile(name:'TREE_AVG_UNISTRAP.stats', seed:"Name\ttreeAvgUnistrap\n", storeDir:params.out_dir) 
 
 
 
