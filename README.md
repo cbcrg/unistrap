@@ -51,10 +51,15 @@ Command line options:
 
 	--rep_num	The number of MSA replicates to be produced (default: 100)
 
-	--seed		Seed for random number generation, (default: time )
+	--seed		Seed for random number generation (default: time )
 
 Pipeline flow
 --------------
+
+![alt unistrap](images/dag.png) 
+
+Workflow schematic representation
+---------------------------------
 
 ![alt unistrap](images/unistrap_schematic_workflow.png) 
 
