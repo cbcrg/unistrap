@@ -56,7 +56,7 @@ Command line options:
 Pipeline flow
 --------------
 
-![alt unistrap](images/dag.png)
+![alt unistrap]("unistrap schematic workflow.png")
 
 Dependencies:
 -------------
