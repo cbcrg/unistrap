@@ -49,9 +49,16 @@ Command line options:
 				(default: Unistrap-NF estimates the tree having the most supported tree topology, across the 
 				different trees relsulting from the different MSA replicates)
 
-	--rep_num	The number of MSA replicates to be produced (default: 100)
+	--aligner	The aligner to be used for the MSA estimation ( default: ClustalO )
+	
+	--rep_num	The number of MSA replicates to be produced ( default: 100 )
 
-	--seed		Seed for random number generation (default: time )
+	--seed		Seed for random number generation ( default: 10 )
+	
+	--boot		Flag that when used it turns on regular Felsenstein Bootstrap support value estimation
+	
+	--boot_num	The number of bootstrap replicates to be produced ( default: 100 )
+	
 
 Pipeline flow
 --------------
