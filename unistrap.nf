@@ -2,25 +2,25 @@
 /*
  * Copyright (c) 2016, Centre for Genomic Regulation (CRG) and the authors.
  *
- *   This file is part of 'Shootstrap-NF'.
+ *   This file is part of 'Unistrap-NF'.
  *
- *   Shootstrap-NF is free software: you can redistribute it and/or modify
+ *   Unistrap-NF is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
  *
- *   Shootstrap-NF is distributed in the hope that it will be useful,
+ *   Unistrap-NF is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with Shootstrap-NF.  If not, see <http://www.gnu.org/licenses/>.
+ *   along with Unistrap-NF.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 /* 
- * Main Shootstrap-NF script
+ * Main Unistrap-NF script
  *
  * @authors
  * Maria Chatzou <mxatzou@gmail.com>
@@ -223,7 +223,7 @@ process get_1_bootstrap_replicate_trees{
 
 
 /*
- * Step 7. Shootstrap values estimation. Calculates the shootstrap values for each replicate tree, using "Fast Tree-Comparison Tools" from FastTree package.
+ * Step 7. Unistrap values estimation. Calculates the shootstrap values for each replicate tree, using "Fast Tree-Comparison Tools" from FastTree package.
  */
 boot_trees.map { file -> tuple(get_prefix(file.name), file) }
           .groupTuple()
@@ -241,7 +241,7 @@ all_boot_trees
       .set{ all_msa_boot_trees }
 
 
-process get_shootstrap_trees{
+process get_unistrap_trees{
 
   input:
       set prefix, file(all_tree_file), file(in_tree_file) from all_msa_boot_trees
@@ -451,7 +451,7 @@ process get_tree_shootstrap_stats{
   '''
 } 
 
-tree_avg_shootstrap.collectFile(name:'TREE_AVG_SHOOTSTRAP.stats', seed:"Name\ttreeAvgShootstrap\n", storeDir:params.out_dir) 
+tree_avg_shootstrap.collectFile(name:'TREE_AVG_UNISTRAP.stats', seed:"Name\ttreeAvgUnistrap\n", storeDir:params.out_dir) 
 
 
 
