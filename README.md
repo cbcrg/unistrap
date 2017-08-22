@@ -56,7 +56,7 @@ Command line options:
 Pipeline flow
 --------------
 
-![alt unistrap](images/unistrap_schematic_workflow.png)
+![alt unistrap](images/unistrap_schematic_workflow.png) 
 
 Dependencies:
 -------------
