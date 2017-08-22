@@ -431,7 +431,7 @@ tree_avg_bootstrap.collectFile(name:'TREE_AVG_BOOTSTRAP.stats', seed:"Name\ttree
 
 
 /*
- * Step 14. Average shoostrap value estimation. The average unistrap value from all the unistrap trees is estimated. 
+ * Step 14. Average unistrap value estimation. The average unistrap value from all the unistrap trees is estimated. 
  */
 process get_tree_unistrap_stats{
 
