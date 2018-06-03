@@ -2,7 +2,7 @@ Unistrap-NF
 ===================
 
 [![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.18.0-brightgreen.svg)](http://nextflow.io)
-![CircleCI status](https://circleci.com/gh/cbcrg/unistrap.png?style=shield)
+[![Build Status](https://travis-ci.org/cbcrg/unistrap.svg?branch=master)](https://travis-ci.org/cbcrg/unistrap)
 
 
 Given a protein sequence dataset, Unistrap-NF estimates a reference phylogenetic tree and the unistrap support of every branch in that tree. The unistrap support is a generalized version of Felsenstein branch bootstrap support measure that simultaneously takes into account the alignment uncerainty effect and the column sampling effect (Felsenstein regular Bootstrap) to provide a support value for every branch in a reference tree. 
